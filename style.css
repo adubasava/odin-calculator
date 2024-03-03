@@ -19,6 +19,7 @@ body {
     padding: 8px;
     box-sizing: border-box;
     border-radius: 8px;
+}
 
 .buttons {
     display: flex;
@@ -50,7 +51,7 @@ body {
     border: 1px solid darkslateblue;
     text-align: right;
     font-family: 'Calculator', sans-serif;
-    font-size: 48px;
+    font-size: 40px;
     box-sizing: border-box;
     padding: 8px;
     background-color: white;

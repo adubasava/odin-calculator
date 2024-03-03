@@ -1,4 +1,12 @@
-﻿function add(num1, num2) {
+﻿const display = document.querySelector('.results');
+
+let firstNumber;
+let secondNumber;
+let operator;
+let last;
+let next;
+
+function add(num1, num2) {
     return Number(num1) + Number(num2);
 }
 
@@ -11,122 +19,170 @@ function multiply(num1, num2) {
 }
 
 function divide(num1, num2) {    
-    if (num2 == 0) return "Oops!";
-    return Number(num1) / Number(num2);
+    if (Number(num2) == 0) {
+        display.textContent = 'Oops!';
+    } else {
+        return Number(num1) / Number(num2);
+    }    
 }
-
-let displayValue;
-let firstNumber;
-let secondNumber;
-let operator;
-let eq;
-let last = 0;
-let next;
 
 function operate(operator, num1, num2) {
     switch(operator) {
         case '+':
-            displayValue = add(num1, num2);   
-            return displayValue;
+            return add(num1, num2);   
         case '-':
-            displayValue = substract(num1, num2);
-            return displayValue;
+            return substract(num1, num2);
         case '*':
-            displayValue = multiply(num1, num2);
-            return displayValue;
+            return multiply(num1, num2);
         case '/':
-            displayValue =  divide(num1, num2);
-            return displayValue;
+            return divide(num1, num2);
     }    
 }
 
-const display = document.querySelector('.results');
+function handleNumbers(num) {
+    if (!firstNumber) {
+        firstNumber = Number(num);
+        return firstNumber;
+    } else {
+        secondNumber = Number(num);
+        return secondNumber;
+    }
+}
+
+function clearAll() {
+    display.textContent = 0;
+    last = firstNumber = secondNumber = operator = null;
+}
 
 const numButtons = document.querySelectorAll('.number');
-
 numButtons.forEach((button) => {
     button.addEventListener('click', () => {
-        if (last == 0) {
+        if (!last && display.textContent == "0.") {
+            display.textContent += button.textContent;            
+        } 
+       /*  else if (!last) {
             display.textContent = '' + button.textContent;
-        } else if (last == operator || last == eq) {
+        }  */
+        else if (last == 0 && display.textContent.length == 1) {
+            display.textContent = '' + button.textContent;            
+        } 
+        else if (last == "=") {
+            clearAll();
+            display.textContent = button.textContent;
+        } else if (last == operator || last == "sqrt") {
             display.textContent = button.textContent;
         } else {
             display.textContent += button.textContent;
         }
         
-        last = button.textContent;
+        last = Number(button.textContent);
     });
 });
 
-function handleNumbers(num) {
-    if (!firstNumber) {
-        firstNumber = num;
-        return firstNumber;
-    } else {
-        secondNumber = num;
-        return secondNumber;
-    }
-}
-
 const clear = document.querySelector('.clear');
 clear.addEventListener('click', () => {
-    display.textContent = 0;
-    last = 0;
-    firstNumber = null;
-    secondNumber = null;
-    operator = null;
+    clearAll();
 })
 
 const oper = document.querySelectorAll('.operator');
-
 oper.forEach((oper) => {
     oper.addEventListener('click', () => {
         if (!operator) {
             operator = oper.textContent;
-            last = operator;
         } else {
             next = oper.textContent;
-            last = next;
         }
         
         handleNumbers(Number(display.textContent));
-        if (firstNumber && secondNumber && operator) {
+
+        if (display.textContent == "Oops!") {
+            clearAll();
+        } else if (last == "=" || last == "sqrt") {
+            firstNumber = Number(display.textContent);
+            secondNumber = null;
+        } else if (firstNumber && secondNumber && operator) {
             display.textContent = operate(operator, firstNumber, secondNumber);
-            firstNumber = display.textContent;
+            firstNumber = Number(display.textContent);
             operator = next;
             secondNumber = null;
         }
+
+        last = operator;
     })
 });
 
 const equal = document.querySelector('.equal');
 equal.addEventListener('click', () => {
-    eq = equal.textContent;
-    
-    secondNumber = handleNumbers(Number(display.textContent));
+
+    handleNumbers(Number(display.textContent));
+
+    console.log(firstNumber);
+    console.log(secondNumber);
+    console.log(operate(operator, firstNumber, secondNumber));
+
     if (firstNumber && secondNumber && operator && last != operator) {
         display.textContent = operate(operator, firstNumber, secondNumber);
+        if (display.textContent == "Oops!") {            
+            firstNumber = null;
+        } else {
+            firstNumber = Number(display.textContent);
+        }        
+        secondNumber = null;
+        operator = null;
+    } else {
         firstNumber = display.textContent;
         secondNumber = null;
-    } else {
-        firstNumber = Number(display.textContent);
-        secondNumber = null;
     }    
-    last = eq;
+    last = "=";
 })
 
 const back = document.querySelector('.back');
 back.addEventListener('click', () => {
     display.textContent = display.textContent.slice(0,display.textContent.length-1);
+    if (display.textContent.length == 0) {
+        display.textContent = 0;
+    }
+})
+
+const sqrt = document.querySelector('.sqrt');
+sqrt.addEventListener('click', () => {    
+    let num = Number(display.textContent);
+    if (num >= 0) {
+        display.textContent = Math.sqrt(num);
+        firstNumber = Number(display.textContent);
+    } else {
+        display.textContent = "Oops!";
+        last = firstNumber = secondNumber = operator = null;
+    }
+        
+    secondNumber = null;
+    last = "sqrt";
 })
 
 const sign = document.querySelector('.sign');
 sign.addEventListener('click', () => {
-    if (display.textContent[0] == "-") {
+    if (display.textContent == 0) {
+        display.textContent = 0;
+    } else if (display.textContent[0] == "-") {
         display.textContent = display.textContent.slice(1,display.textContent.length);
     } else {
         display.textContent = "-" + display.textContent;
     }
 })
 
+const decimal = document.querySelector('.decimal');
+decimal.addEventListener('click', () => {
+    
+    if (last == operator) {
+        firstNumber = Number(display.textContent.slice(0,display.textContent.length));
+        display.textContent = 0 + ".";
+        last = ".";
+    } else if (last == "=" || last == "sqrt") {
+        clearAll();
+        display.textContent = 0 + ".";
+    } else if (!display.textContent.includes(".")) {
+        display.textContent += ".";
+        last = ".";
+    }       
+});
 
