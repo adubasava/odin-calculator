@@ -96,7 +96,9 @@ oper.forEach((oper) => {
         } else if (last == "=" || last == "sqrt") {
             firstNumber = Number(display.textContent);
             secondNumber = null;
-        } else if (firstNumber !== null && secondNumber !== null && operator) {
+        } else if (secondNumber === undefined) {
+            firstNumber = Number(display.textContent);
+        } else if (firstNumber !== null && secondNumber !== null) {
             display.textContent = operate(operator, firstNumber, secondNumber);
             if (display.textContent == "Oops!") {            
                 firstNumber = null;
@@ -105,7 +107,7 @@ oper.forEach((oper) => {
             }             
             operator = next;
             secondNumber = null;
-        }
+        } 
 
         last = operator;
     })
