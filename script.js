@@ -19,11 +19,7 @@ function multiply(num1, num2) {
 }
 
 function divide(num1, num2) {    
-    if (Number(num2) == 0) {
-        display.textContent = 'Oops!';
-    } else {
-        return Number(num1) / Number(num2);
-    }    
+    return Number(num1) / Number(num2);
 }
 
 function operate(operator, num1, num2) {
@@ -35,12 +31,16 @@ function operate(operator, num1, num2) {
         case '*':
             return multiply(num1, num2);
         case '/':
-            return divide(num1, num2);
+            if (num2 == 0) {
+                return display.textContent = 'Oops!';
+            } else {
+                return divide(num1, num2);
+            }            
     }    
 }
 
 function handleNumbers(num) {
-    if (!firstNumber) {
+    if (firstNumber === undefined || firstNumber === null) {
         firstNumber = Number(num);
         return firstNumber;
     } else {
@@ -59,11 +59,7 @@ numButtons.forEach((button) => {
     button.addEventListener('click', () => {
         if (!last && display.textContent == "0.") {
             display.textContent += button.textContent;            
-        } 
-       /*  else if (!last) {
-            display.textContent = '' + button.textContent;
-        }  */
-        else if (last == 0 && display.textContent.length == 1) {
+        } else if (last == 0 && display.textContent.length == 1) {
             display.textContent = '' + button.textContent;            
         } 
         else if (last == "=") {
@@ -100,9 +96,13 @@ oper.forEach((oper) => {
         } else if (last == "=" || last == "sqrt") {
             firstNumber = Number(display.textContent);
             secondNumber = null;
-        } else if (firstNumber && secondNumber && operator) {
+        } else if (firstNumber !== null && secondNumber !== null && operator) {
             display.textContent = operate(operator, firstNumber, secondNumber);
-            firstNumber = Number(display.textContent);
+            if (display.textContent == "Oops!") {            
+                firstNumber = null;
+            } else {
+                firstNumber = Number(display.textContent);
+            }             
             operator = next;
             secondNumber = null;
         }
@@ -116,11 +116,7 @@ equal.addEventListener('click', () => {
 
     handleNumbers(Number(display.textContent));
 
-    console.log(firstNumber);
-    console.log(secondNumber);
-    console.log(operate(operator, firstNumber, secondNumber));
-
-    if (firstNumber && secondNumber && operator && last != operator) {
+    if (firstNumber !== null && secondNumber !== null && operator && last != operator) {
         display.textContent = operate(operator, firstNumber, secondNumber);
         if (display.textContent == "Oops!") {            
             firstNumber = null;
