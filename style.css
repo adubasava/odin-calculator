@@ -66,6 +66,7 @@ button {
     font-family: 'Calculator', sans-serif;
     font-size: 26px;
     border-radius: 8px;
+    cursor: pointer;
 }
 
 button:hover {
