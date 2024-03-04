@@ -93,8 +93,8 @@ oper.forEach((oper) => {
             operator = oper.textContent;
         } else {
             next = oper.textContent;
-        }    
-        
+        }
+                
         if (display.textContent == "Oops!" || firstNumber === null) {
             clearAll();
         } else if (last == "=" || last == "sqrt") {
@@ -182,7 +182,9 @@ const decimal = document.querySelector('.decimal');
 decimal.addEventListener('click', () => {
     
     if (last == operator) {
-        firstNumber = Number(display.textContent.slice(0,display.textContent.length));
+        display.textContent = 0 + ".";
+        last = ".";
+    } else if (last === undefined) {
         display.textContent = 0 + ".";
         last = ".";
     } else if (last == "=" || last == "sqrt") {
