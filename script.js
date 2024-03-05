@@ -184,9 +184,6 @@ decimal.addEventListener('click', () => {
     if (last == operator) {
         display.textContent = 0 + ".";
         last = ".";
-    } else if (last === undefined) {
-        display.textContent = 0 + ".";
-        last = ".";
     } else if (last == "=" || last == "sqrt") {
         clearAll();
         display.textContent = 0 + ".";
