@@ -1,195 +1,254 @@
-﻿const display = document.querySelector('.results');
+﻿bod = document.querySelector('body');
+bod.addEventListener('keydown', (event) => {
+    if (isNumeric(event.key)) {
+        enterSymbol(event.key);
+    }
+    else if (event.key == ".") {
+        enterDot();
+    } else if (event.key == "=" || event.key == "Enter") {
+        calculate();
+    } else if (["+","-","*","/"].includes(event.key)) {
+        startNewNumber = true;    
 
-let firstNumber;
-let secondNumber;
-let operator;
-let last;
-let next;
+        if (operator === null) {
+            operator = event.key;
+        } else if (nextOperator) {
+            operator = nextOperator;
+            nextOperator = event.key;
+        } else {
+            nextOperator = event.key;
+        }
 
-function add(num1, num2) {
-    return Number(num1) + Number(num2);
+        manageOperator(operator);
+
+    } else if (event.key == "Backspace") {
+        deleteSymbol();
+    }
+},
+    true,
+);
+
+function isNumeric(key) {
+    return /^[0-9]$/.test(key);
 }
 
-function substract(num1, num2) {
-    return Number(num1) - Number(num2);
+const display = document.querySelector('.results');
+
+let firstNumber = null;
+let secondNumber = null;
+let operator = null;
+let nextOperator = null;
+let isFirstNumberActive = true;
+let startNewNumber = false;
+
+function enterSymbol(symbol) {
+    if (display.textContent.length >= 19) {
+        display.textContent = display.textContent;
+    } else if (Number(display.textContent[0]) == 0 && display.textContent.length == 1) {
+        display.textContent = "" + symbol;
+    } else if (startNewNumber && display.textContent[0] == 0 && display.textContent[1] == ".") {
+        display.textContent += symbol; 
+    } else if (startNewNumber) {
+        display.textContent = "" + symbol;
+        startNewNumber = false;
+    } else if (!startNewNumber) {
+        display.textContent += symbol; 
+    } else {  
+        display.textContent += symbol; 
+    }
 }
 
-function multiply(num1, num2) {
-    return Number(num1) * Number(num2);
+function enterDot() {
+    if (startNewNumber) {
+        display.textContent = 0 + ".";
+    } else if (!display.textContent.includes(".")) {
+        display.textContent += ".";
+    }
 }
 
-function divide(num1, num2) {    
-    return Number(num1) / Number(num2);
+function manageOperator(operator) {       
+
+    handleNumbers(Number(display.textContent));
+
+    if (display.textContent == "Oops!" || firstNumber === null) {
+        clearAll();
+    } else if (isFirstNumberActive) {
+        isFirstNumberActive = false;
+        firstNumber = Number(display.textContent);
+    } else {
+        isFirstNumberActive = true;
+        secondNumber = Number(display.textContent);  
+        display.textContent = operate(operator, firstNumber, secondNumber);
+            if (display.textContent == "Oops!") {            
+                clearAll();
+                display.textContent = "Oops!";
+            } else {                           
+                display.textContent = roundFloat(display.textContent);
+                firstNumber = Number(display.textContent);
+                secondNumber = null;
+                isFirstNumberActive = false;
+            } 
+    }  
+    
+    startNewNumber = true;
 }
 
-function operate(operator, num1, num2) {
+function calculate() {
+
+    if (nextOperator) {
+        operator = nextOperator;
+    }
+
+    handleNumbers(Number(display.textContent));
+
+    if (firstNumber !== null && secondNumber !== null && operator) {
+        firstNumber = Number(firstNumber);
+        secondNumber = Number(secondNumber);
+        display.textContent = operate(operator, firstNumber, secondNumber);
+        if (display.textContent == "Oops!") {                                   
+            clearAll();
+            display.textContent = "Oops!";
+        } else {
+            let result = roundFloat(display.textContent);
+            clearAll();
+            display.textContent = firstNumber = result;
+            isFirstNumberActive = false;
+        }
+    } else {
+        firstNumber = Number(display.textContent);
+        isFirstNumberActive = false;
+        secondNumber = null;
+    }
+    
+    startNewNumber = true;
+}
+
+function add(firstNumber, secondNumber) {
+    return Number(firstNumber) + Number(secondNumber);
+}
+
+function substract(firstNumber, secondNumber) {
+    return Number(firstNumber) - Number(secondNumber);
+}
+
+function multiply(firstNumber, secondNumber) {
+    return Number(firstNumber) * Number(secondNumber);
+}
+
+function divide(firstNumber, secondNumber) {    
+    return Number(firstNumber) / Number(secondNumber);
+}
+
+function takeSquareRoot(number) {    
+    return Number(number) ** 0.5;
+}
+
+function operate(operator, firstNumber, secondNumber) {
     switch(operator) {
         case '+':
-            return add(num1, num2);   
+            return add(firstNumber, secondNumber);   
         case '-':
-            return substract(num1, num2);
+            return substract(firstNumber, secondNumber);
         case '*':
-            return multiply(num1, num2);
+            return multiply(firstNumber, secondNumber);
         case '/':
-            if (num2 == 0) {
+            if (secondNumber === 0) {
                 return display.textContent = 'Oops!';
             } else {
-                return divide(num1, num2);
+                return divide(firstNumber, secondNumber);
             }            
     }    
 }
 
-function handleNumbers(num) {
-    if (firstNumber === undefined || firstNumber === null) {
-        firstNumber = Number(num);
-        return firstNumber;
+function operateSquareRoot() {
+    let number = Number(display.textContent);
+    if (number >= 0) {
+        let result = takeSquareRoot(number);
+        clearAll();
+        display.textContent = firstNumber = result;
     } else {
-        secondNumber = Number(num);
-        return secondNumber;
+        clearAll();
+        display.textContent = "Oops!";
     }
 }
 
 function clearAll() {
     display.textContent = 0;
-    last = firstNumber = secondNumber = operator = null;
+    firstNumber = secondNumber = operator = nextOperator = null;
+    startNewNumber = false;
+    isFirstNumberActive = true;
 }
 
-function roundFloat(num) {
-    return parseFloat(Math.round(num + 'e' + 15) + 'e-' + 15);
-}
-
-const numButtons = document.querySelectorAll('.number');
-numButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-        if (!last && display.textContent == "0.") {
-            display.textContent += button.textContent;            
-        } else if (last == 0 && display.textContent.length == 1) {
-            display.textContent = '' + button.textContent;            
-        } else if (last == "=") {
-            clearAll();
-            display.textContent = button.textContent;
-        } else if (last == operator || last == "sqrt") {
-            display.textContent = button.textContent;
-        } else {
-            display.textContent += button.textContent;
-        }
-        
-        last = Number(button.textContent);
-    });
-});
-
-const clear = document.querySelector('.clear');
-clear.addEventListener('click', () => {
-    clearAll();
-})
-
-const oper = document.querySelectorAll('.operator');
-oper.forEach((oper) => {
-    oper.addEventListener('click', () => {    
-
-        handleNumbers(Number(display.textContent));
-
-        if (!operator) {
-            operator = oper.textContent;
-        } else {
-            next = oper.textContent;
-        }
-                
-        if (display.textContent == "Oops!" || firstNumber === null) {
-            clearAll();
-        } else if (last == "=" || last == "sqrt") {
-            firstNumber = Number(display.textContent);
-            secondNumber = null;
-        } else if (secondNumber === undefined) {
-            firstNumber = Number(display.textContent);
-        } else if (firstNumber !== null && secondNumber !== null) {
-            display.textContent = operate(operator, firstNumber, secondNumber);
-            if (display.textContent == "Oops!") {            
-                firstNumber = secondNumber = operator = null;
-            } else {
-                display.textContent = roundFloat(display.textContent);
-                firstNumber = Number(display.textContent);
-                operator = next;
-                secondNumber = null;
-            } 
-        } 
-
-        last = operator;
-    })
-});
-
-const equal = document.querySelector('.equal');
-equal.addEventListener('click', () => {
-
-    handleNumbers(Number(display.textContent));
-
-    if (firstNumber !== null && secondNumber !== null && operator && last != operator) {
-        firstNumber = Number(firstNumber);
-        secondNumber = Number(secondNumber);
-        display.textContent = operate(operator, firstNumber, secondNumber);
-        if (display.textContent == "Oops!") {            
-            last = firstNumber = secondNumber = operator = null;
-        } else {
-            display.textContent = roundFloat(display.textContent);
-            firstNumber = Number(display.textContent);
-            secondNumber = operator = null;
-        }
+function toggleSign() {
+    if (display.textContent == 0) {
+        display.textContent = 0;
+    } else if (display.textContent[0] == "-") {
+        display.textContent = display.textContent.slice(1,display.textContent.length);
     } else {
-        firstNumber = Number(display.textContent);
-        secondNumber = null;        
-    }    
-    last = "=";
-})
+        display.textContent = "-" + display.textContent;
+    }
+}
 
-const back = document.querySelector('.back');
-back.addEventListener('click', () => {
+function deleteSymbol() {    
     display.textContent = display.textContent.slice(0,display.textContent.length-1);
     if (display.textContent.length == 0) {
         display.textContent = 0;
-    }
-})
+    }}
+
+const back = document.querySelector('.back');
+back.addEventListener("click", deleteSymbol);
+
+const decimal = document.querySelector(".decimal");
+decimal.addEventListener("click", enterDot);
+
+const sign = document.querySelector(".sign");
+sign.addEventListener("click", toggleSign);
+
+const equal = document.querySelector(".equal");
+equal.addEventListener("click", calculate);
+
+const clear = document.querySelector(".clear");
+clear.addEventListener("click", clearAll);
+
+const oper = document.querySelectorAll(".operator");
+oper.forEach((oper) => {
+    oper.addEventListener("click", () => {
+        startNewNumber = true;
+        
+        if (operator === null) {
+            operator = oper.textContent;
+        } else if (nextOperator) {
+            operator = nextOperator;
+            nextOperator = oper.textContent;
+        } else {
+            nextOperator = oper.textContent;
+        }
+
+        manageOperator(operator);
+    });
+});
 
 const sqrt = document.querySelector('.sqrt');
-sqrt.addEventListener('click', () => {    
+sqrt.addEventListener("click", operateSquareRoot);
 
-    let num = Number(display.textContent);
-    if (num >= 0) {
-        display.textContent = firstNumber = Math.sqrt(num);
-        secondNumber = operator = null;
-    } else {
-        display.textContent = "Oops!";
-        last = firstNumber = secondNumber = operator = null;
-    }
-    
-    last = 'sqrt';
-})
-
-const sign = document.querySelector('.sign');
-sign.addEventListener('click', () => {
-    if (display.textContent == 0) {
-        display.textContent = 0;
-        firstNumber = Number(display.textContent);
-    } else if (display.textContent[0] == "-") {
-        display.textContent = display.textContent.slice(1,display.textContent.length);
-        firstNumber = Number(display.textContent);
-    } else {
-        display.textContent = "-" + display.textContent;
-        firstNumber = Number(display.textContent);
-    }    
-})
-
-const decimal = document.querySelector('.decimal');
-decimal.addEventListener('click', () => {
-    
-    if (last == operator) {
-        display.textContent = 0 + ".";
-        last = ".";
-    } else if (last == "=" || last == "sqrt") {
-        clearAll();
-        display.textContent = 0 + ".";
-        last = ".";
-    } else if (!display.textContent.includes(".")) {
-        display.textContent += ".";
-        last = ".";
-    }       
+const numButtons = document.querySelectorAll(".number");
+numButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+        enterSymbol(button.textContent);        
+    });
 });
+
+// Helper functions
+function handleNumbers(number) {
+    if (firstNumber === undefined || firstNumber === null) {
+        firstNumber = Number(number);
+        return firstNumber;
+    } else {
+        secondNumber = Number(number);
+        return secondNumber;
+    }
+}
+
+function roundFloat(number) {
+    return parseFloat(Math.round(number + 'e' + 15) + 'e-' + 15);
+}
