@@ -2,21 +2,20 @@
 bod.addEventListener('keydown', (event) => {
     if (isNumeric(event.key)) {
         enterSymbol(event.key);
-    }
-    else if (event.key == ".") {
+    } else if (event.key == ".") {
         enterDot();
     } else if (event.key == "=" || event.key == "Enter") {
         calculate();
     } else if (["+","-","*","/"].includes(event.key)) {
-        startNewNumber = true;    
+        startNewNumber = true;
 
         if (operator === null) {
-            operator = event.key;
-        } else if (nextOperator) {
-            operator = nextOperator;
-            nextOperator = event.key;
+            operator = event.key;            
         } else {
-            nextOperator = event.key;
+            firstNumber = calculate();
+            secondNumber = null;
+            isFirstNumberActive = true;
+            operator = event.key;
         }
 
         manageOperator(operator);
@@ -37,7 +36,6 @@ const display = document.querySelector('.results');
 let firstNumber = null;
 let secondNumber = null;
 let operator = null;
-let nextOperator = null;
 let isFirstNumberActive = true;
 let startNewNumber = false;
 
@@ -95,11 +93,7 @@ function manageOperator(operator) {
 
 function calculate() {
 
-    if (nextOperator) {
-        operator = nextOperator;
-    }
-
-    handleNumbers(Number(display.textContent));
+    handleNumbers(Number(display.textContent)); 
 
     if (firstNumber !== null && secondNumber !== null && operator) {
         firstNumber = Number(firstNumber);
@@ -107,20 +101,23 @@ function calculate() {
         display.textContent = operate(operator, firstNumber, secondNumber);
         if (display.textContent == "Oops!") {                                   
             clearAll();
-            display.textContent = "Oops!";
+            startNewNumber = true;
+            return display.textContent = "Oops!";
         } else {
             let result = roundFloat(display.textContent);
             clearAll();
             display.textContent = firstNumber = result;
             isFirstNumberActive = false;
+            startNewNumber = true;
+            return result;
         }
     } else {
         firstNumber = Number(display.textContent);
         isFirstNumberActive = false;
         secondNumber = null;
-    }
+        startNewNumber = true;
+    }  
     
-    startNewNumber = true;
 }
 
 function add(firstNumber, secondNumber) {
@@ -168,13 +165,14 @@ function operateSquareRoot() {
         display.textContent = firstNumber = result;
     } else {
         clearAll();
+        startNewNumber = true;
         display.textContent = "Oops!";
     }
 }
 
 function clearAll() {
     display.textContent = 0;
-    firstNumber = secondNumber = operator = nextOperator = null;
+    firstNumber = secondNumber = operator = null;
     startNewNumber = false;
     isFirstNumberActive = true;
 }
@@ -213,15 +211,16 @@ clear.addEventListener("click", clearAll);
 const oper = document.querySelectorAll(".operator");
 oper.forEach((oper) => {
     oper.addEventListener("click", () => {
-        startNewNumber = true;
-        
+
+        startNewNumber = true
+
         if (operator === null) {
-            operator = oper.textContent;
-        } else if (nextOperator) {
-            operator = nextOperator;
-            nextOperator = oper.textContent;
+            operator = oper.textContent;            
         } else {
-            nextOperator = oper.textContent;
+            firstNumber = calculate();
+            secondNumber = null;
+            isFirstNumberActive = true;
+            operator = oper.textContent;
         }
 
         manageOperator(operator);
