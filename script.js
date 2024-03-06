@@ -7,7 +7,6 @@ bod.addEventListener('keydown', (event) => {
     } else if (event.key == "=" || event.key == "Enter") {
         calculate();
     } else if (["+","-","*","/"].includes(event.key)) {
-        startNewNumber = true;
 
         if (operator === null) {
             operator = event.key;            
@@ -37,31 +36,42 @@ let firstNumber = null;
 let secondNumber = null;
 let operator = null;
 let isFirstNumberActive = true;
-let startNewNumber = false;
+let lastValue = null;
 
 function enterSymbol(symbol) {
     if (display.textContent.length >= 19) {
         display.textContent = display.textContent;
-    } else if (Number(display.textContent[0]) == 0 && display.textContent.length == 1) {
-        display.textContent = "" + symbol;
-    } else if (startNewNumber && display.textContent[0] == 0 && display.textContent[1] == ".") {
-        display.textContent += symbol; 
-    } else if (startNewNumber) {
-        display.textContent = "" + symbol;
-        startNewNumber = false;
-    } else if (!startNewNumber) {
-        display.textContent += symbol; 
-    } else {  
-        display.textContent += symbol; 
+    } else if (!lastValue && display.textContent == "0.") {
+        display.textContent += symbol;            
+    } else if (lastValue == 0 && display.textContent.length == 1) {
+        display.textContent = '' + symbol;            
+    } else if (lastValue == "=") {
+        clearAll();
+        display.textContent = symbol;
+    } else if (lastValue == operator || lastValue == "sqrt") {
+        display.textContent = symbol;
+    } else {
+        display.textContent += symbol;
     }
+
+    lastValue = symbol;
 }
 
 function enterDot() {
-    if (startNewNumber) {
+
+    if (lastValue == operator) {
         display.textContent = 0 + ".";
+        lastValue = ".";
+    } else if (lastValue == "=" || last == "sqrt") {
+        clearAll();
+        display.textContent = 0 + ".";
+        lastValue = ".";
     } else if (!display.textContent.includes(".")) {
         display.textContent += ".";
-    }
+        lastValue = ".";
+    }       
+
+    lastValue = ".";
 }
 
 function manageOperator(operator) {       
@@ -70,6 +80,9 @@ function manageOperator(operator) {
 
     if (display.textContent == "Oops!" || firstNumber === null) {
         clearAll();
+    } else if (lastValue == "=" || lastValue == "sqrt") {
+        firstNumber = Number(display.textContent);
+        secondNumber = null;
     } else if (isFirstNumberActive) {
         isFirstNumberActive = false;
         firstNumber = Number(display.textContent);
@@ -88,36 +101,35 @@ function manageOperator(operator) {
             } 
     }  
     
-    startNewNumber = true;
+    lastValue = operator;
 }
 
 function calculate() {
 
     handleNumbers(Number(display.textContent)); 
 
-    if (firstNumber !== null && secondNumber !== null && operator) {
+    if (firstNumber !== null && secondNumber !== null && operator && lastValue != operator) {
         firstNumber = Number(firstNumber);
         secondNumber = Number(secondNumber);
         display.textContent = operate(operator, firstNumber, secondNumber);
         if (display.textContent == "Oops!") {                                   
             clearAll();
-            startNewNumber = true;
+            lastValue = "=";
             return display.textContent = "Oops!";
         } else {
             let result = roundFloat(display.textContent);
             clearAll();
             display.textContent = firstNumber = result;
             isFirstNumberActive = false;
-            startNewNumber = true;
+            lastValue = "=";
             return result;
         }
     } else {
         firstNumber = Number(display.textContent);
         isFirstNumberActive = false;
         secondNumber = null;
-        startNewNumber = true;
-    }  
-    
+        lastValue = "=";
+    }      
 }
 
 function add(firstNumber, secondNumber) {
@@ -165,15 +177,14 @@ function operateSquareRoot() {
         display.textContent = firstNumber = result;
     } else {
         clearAll();
-        startNewNumber = true;
         display.textContent = "Oops!";
     }
+    lastValue = "sqrt";
 }
 
 function clearAll() {
     display.textContent = 0;
-    firstNumber = secondNumber = operator = null;
-    startNewNumber = false;
+    firstNumber = secondNumber = operator = lastValue = null;
     isFirstNumberActive = true;
 }
 
@@ -211,8 +222,6 @@ clear.addEventListener("click", clearAll);
 const oper = document.querySelectorAll(".operator");
 oper.forEach((oper) => {
     oper.addEventListener("click", () => {
-
-        startNewNumber = true
 
         if (operator === null) {
             operator = oper.textContent;            
