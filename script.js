@@ -4,7 +4,8 @@ bod.addEventListener('keydown', (event) => {
         enterSymbol(event.key);
     } else if (event.key == ".") {
         enterDot();
-    } else if (event.key == "=" || event.key == "Enter") {
+    } else if (event.key == "=" || event.key === "Enter") {
+        event.preventDefault();
         calculate();
     } else if (["+","-","*","/"].includes(event.key)) {
 
